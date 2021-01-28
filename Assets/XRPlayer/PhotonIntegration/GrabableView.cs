@@ -34,7 +34,16 @@ public class GrabableView : MonoBehaviourPun, IPunObservable
         isLocalPlayerPickup = true;
         TransfreOwnershipBrutal(PhotonNetwork.LocalPlayer);
     }
+    public void OnLocalPlayerMount()
+    {
+        isLocalPlayerPickup = true;
+        TransfreOwnershipBrutal(PhotonNetwork.LocalPlayer);
+    }
     public void OnLocalPlayerDrop()
+    {
+        isLocalPlayerPickup = false;
+    }
+    public void OnLocalPlayerUnMount()
     {
         isLocalPlayerPickup = false;
     }

@@ -40,8 +40,9 @@ public class XRPlayerLocomotion : MonoBehaviour
     public float stepHeight = .3f;
     public float slopeLimit = 60f;
     public float jumpSpeed = 4.5f;
+    public bool useWingSuit = true;
     public float wingSuitSpeed = 7f;
-    public float wingSuitSlope = 30f;
+    public float wingSuitFallingSpeed = 1f;
     public float hookSpeed = 10f;
 
     [Header("Confort Setting")]
@@ -62,7 +63,7 @@ public class XRPlayerLocomotion : MonoBehaviour
 
     bool mouseLook;
 
-    State GroundedState, FallingState, TeleportModeState, SeatedState;
+    State GroundedState, FallingState, TeleportModeState, SeatedState, HookState;
 
     Vector2 inputStick;
     Vector2 inputStick2;
@@ -82,13 +83,12 @@ public class XRPlayerLocomotion : MonoBehaviour
 
     private void OnEnable()
     {
-        Debug.Log("OnEnable");
+        Debug.Log("XRPlayerLocomotion OnEnable");
         instance = this;
-        
     }
     private void OnDisable()
     {
-        Debug.Log("OnDisable");
+        Debug.Log("XRPlayerLocomotion OnDisable");
         TransitionState(GroundedState);
     }
     private void OnValidate()
@@ -131,6 +131,9 @@ public class XRPlayerLocomotion : MonoBehaviour
         SeatedState.OnExit = ExitSeated;
         SeatedState.Update = UpdateSeated;
         SeatedState.LateUpdate = LateUpdateSeated;
+
+        HookState = new State("Hook");
+        HookState.Update = UpdateHook;
 
         TransitionState(GroundedState);
 
@@ -288,8 +291,17 @@ public class XRPlayerLocomotion : MonoBehaviour
         Vector3 inputDelta = inputVectorW * curSpeed * scale * dt;
 
         //Start Moving Character
-        fallingVelocity += Physics.gravity * dt;
-        fallingVelocity = Vector3.Dot(fallingVelocity-fallingVelocityReference, up) * up+fallingVelocityReference + (inputDelta + trackedDelta) / dt;
+        if (useWingSuit && CheckWingSuit(out Vector3 armForward) && Vector3.Dot(fallingVelocity,up)<0)
+        {
+            Vector3 wingSuitVelocity= wingSuitSpeed * armForward - wingSuitFallingSpeed * up;
+            fallingVelocity = Vector3.Lerp(fallingVelocity, wingSuitVelocity, dt/1f);
+            fallingVelocityReference = Vector3.zero;
+        }
+        else
+        {
+            fallingVelocity += Physics.gravity * dt;
+            fallingVelocity = Vector3.Dot(fallingVelocity - fallingVelocityReference, up) * up + fallingVelocityReference + (inputDelta + trackedDelta) / dt;
+        }
         Vector3 delta = fallingVelocity * dt;
 
         //Check Grounded
@@ -299,48 +311,6 @@ public class XRPlayerLocomotion : MonoBehaviour
         if (isThisStep && groundDist + Vector3.Dot(fallingVelocity * dt, up) <= .1f * R * scale)
             TransitionState(GroundedState);
 
-        //Move the Character and camera
-        {
-            delta = SweepCollider(delta, slide: true);
-            transform.position += delta;
-            trackingSpace.position -= trackedDelta;
-            //if (inputDelta.magnitude > 0) 
-            ResolveCollision();
-        }
-    }
-    void UpdateWingSuit(float dt)
-    {
-        if (teleportMode == true) { TransitionState(TeleportModeState); return; }
-
-        //height and rotation
-        AdjustColliderAndHead();
-        DealInputRotation();
-        DealTrackedRotation();
-
-        //Head Movement
-        Vector3 trackedDelta = Vector3.ProjectOnPlane(head.position - transform.position, up);
-        if (trackedDelta.magnitude > headTeleportDistance)
-        {
-            trackingSpace.position -= trackedDelta;
-            trackedDelta = Vector3.zero;
-        }
-
-        //Input Movement
-        Vector3 inputVectorW = Vector3.ProjectOnPlane(inputRef.TransformDirection(new Vector3(inputStick.x, 0, inputStick.y)), Vector3.up).normalized * inputStick.magnitude;
-        float curSpeed = inputDash ? dashSpeed : speed;
-        Vector3 inputDelta = inputVectorW * curSpeed * scale * dt;
-
-        //Start Moving Character
-        fallingVelocity += Physics.gravity * dt;
-        fallingVelocity = Vector3.Dot(fallingVelocity - fallingVelocityReference, up) * up + fallingVelocityReference + (inputDelta + trackedDelta) / dt;
-        Vector3 delta = fallingVelocity * dt;
-
-        //Check Grounded
-        bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
-            .9f * R * scale, TD(0, -1, 0), out RaycastHit groundHit, 2 * stepHeight * scale, groundLayers);
-        float groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
-        if (isThisStep && groundDist + Vector3.Dot(fallingVelocity * dt, up) <= .1f * R * scale)
-            TransitionState(GroundedState);
 
         //Move the Character and camera
         {
@@ -358,6 +328,68 @@ public class XRPlayerLocomotion : MonoBehaviour
     void ExitGrounded()
     {
         SetAttach(null, Vector3.zero);
+    }
+    #endregion
+    #region GrapplingGun
+    Transform hookAttached;
+    Rigidbody hookAttachedRigidbody;
+    Vector3 hookAttachedPositionLS;
+    float hookAttachedCD;
+    public void SetHook(Transform hookAttached, Rigidbody hookAttachedRigidbody, Vector3 hookAttachedPositionLS,  float TTL=.1f)
+    {
+        hookAttachedCD = TTL;
+        this.hookAttached = hookAttached;
+        this.hookAttachedRigidbody = hookAttachedRigidbody;
+        this.hookAttachedPositionLS = hookAttachedPositionLS;
+        TransitionState(HookState);
+    }
+    void UpdateHook(float dt)
+    {
+        hookAttachedCD -= dt;
+        if (hookAttachedCD < 0)
+        {
+            TransitionState(FallingState);
+            return;
+        }
+
+        //height and rotation
+        AdjustColliderAndHead();
+        DealTrackedRotation();
+
+        //Head Movement
+        Vector3 trackedDelta = Vector3.ProjectOnPlane(head.position - transform.position, up);
+        if (trackedDelta.magnitude > headTeleportDistance)
+        {
+            trackingSpace.position -= trackedDelta;
+            trackedDelta = Vector3.zero;
+        }
+
+        //Start Moving Character
+        Vector3 hookPosition = hookAttached.TransformPoint(hookAttachedPositionLS);
+        fallingVelocity = (hookPosition - transform.position).normalized * hookSpeed;
+        if (hookAttachedRigidbody)
+            fallingVelocity += Vector3.Project(hookAttachedRigidbody.velocity, hookPosition - transform.position);
+        fallingVelocityReference = fallingVelocity;
+        Vector3 delta = fallingVelocity * dt;
+
+
+        //Move the Character and camera
+        {
+            delta = SweepCollider(delta, slide: true);
+            transform.position += delta;
+            trackingSpace.position -= trackedDelta;
+            //if (inputDelta.magnitude > 0) 
+            ResolveCollision();
+        }
+    }
+    #endregion
+    #region WingSuit
+    bool CheckWingSuit(out Vector3 armForward)
+    {
+        float expectedArmSpan = expectedPlayerHeight * .5f;
+        Vector3 armSpanVector = Vector3.ProjectOnPlane(rightHand.position - leftHand.position, up);
+        armForward = Vector3.Cross(armSpanVector, up).normalized;
+        return trackingSpace.InverseTransformVector(armSpanVector).magnitude > expectedArmSpan;
     }
     #endregion
     #region Teleport

@@ -15,19 +15,26 @@ public class XRGrabable : XRInteractable
     public AttachMode attachMode = AttachMode.FreeGrab;
 
     public Transform attachRef, attach2Ref;
+    public Transform mountRef;
+    public string mountTag="Disabled";
+    public XRMountPoint mountWhenDetached;
     public XRJointSettings jointSettings;
     public float lostTrackDist = .3f;
     public float throwSmoothTime = .1f;
     public bool breakWhenLostTrack = true;
 
-    public UnityEvent onPickUp, onDrop;
     [System.Serializable] public class UpdateTransform : UnityEvent<Transform> { }
-    public UpdateTransform updateAttach = new UpdateTransform();
+    [System.Serializable]public struct UpdateEvents
+    {
+        public UnityEvent onPickUp, onDrop, onMount, onUnMount;
+        public UpdateTransform updateAttach;
+    }
+    public UpdateEvents updateEvents;
 
     public Behaviour outline;
 
     Rigidbody body;
-    [HideInInspector]public XRHand hand, hand2;
+    [HideInInspector] public XRHand hand, hand2;
     ConfigurableJoint joint, joint2;
     Quaternion jointBias, jointBias2;
     Vector3 attachedPositionLS, attached2PositionLS, desiredPosition;
@@ -38,6 +45,7 @@ public class XRGrabable : XRInteractable
     {
         body = GetComponent<Rigidbody>();
         if (!attachRef) attachRef = transform;
+        if (!mountRef) mountRef = transform;
         if (outline) outline.enabled = false;
     }
 
@@ -45,10 +53,14 @@ public class XRGrabable : XRInteractable
     {
         hand?.DetachIfAny();
         hand2?.DetachIfAny();
-        onDrop.Invoke();
+        updateEvents.onDrop.Invoke();
         if (outline) outline.enabled = false;
     }
-
+    public void OnOtherPlayerTake()
+    {
+        DetachIfAttached();
+        UnmountIfMounted();//Be careful with the order, ondrop will trigger the mount logic
+    }
     public void DetachIfAttached()
     {
         if (hand) hand.DetachIfAny();
@@ -83,6 +95,10 @@ public class XRGrabable : XRInteractable
 
     public override void OnAttach(XRHand emptyHand, Vector3 attachPositionWS, Quaternion attachRotationWS)
     {
+        if (mounted)
+        {
+            _UnMount();
+        }
         if (!hand)
         {
             hand = emptyHand;
@@ -90,8 +106,8 @@ public class XRGrabable : XRInteractable
             attachedPositionLS = transform.InverseTransformPoint(attachPositionWS);
             attachedRotationLS = Quaternion.Inverse(transform.rotation) * attachRotationWS;
             ResetMovement();
-            updateAttach.Invoke(emptyHand.playerRoot);
-            onPickUp.Invoke();
+            updateEvents.updateAttach.Invoke(emptyHand.playerRoot);
+            _OnPickUp();
         }
         else
         {
@@ -159,12 +175,26 @@ public class XRGrabable : XRInteractable
 
     }
 
+    void _OnPickUp()
+    {
+        updateEvents.onPickUp.Invoke();
+    }
     void _OnDrop()
     {
         body.velocity = smoothedVelocity;
         body.angularVelocity = smoothedAngularVelocity;
-        onDrop.Invoke();
-        updateAttach.Invoke(null);
+        updateEvents.onDrop.Invoke();
+        updateEvents.updateAttach.Invoke(null);
+        if (mountWhenDetached)
+            TryMount(mountWhenDetached);
+        else
+        {
+            var mp = GetMountHovering();
+            if (mp)
+            {
+                TryMount(mp);
+            }
+        }
     }
     /*
     public override (Vector3, Quaternion) GetAttachPosition(XRHand hand)
@@ -215,7 +245,14 @@ public class XRGrabable : XRInteractable
                 if (joint2)
                     UpdateJoint(joint2, jointBias2, body, hand2.bodyToAttach, desiredPosition, desiredRotation);
             }
+        } 
+        else if (mounted)
+        {
+            UpdateMounted(Time.fixedDeltaTime);
         }
+
+        if (mountWhenDetached && !mounted && !hand)
+            TryMount(mountWhenDetached);
 
         {
             smoothedVelocity = Vector3.Lerp(smoothedVelocity, body.velocity, Time.fixedDeltaTime / throwSmoothTime);
@@ -317,7 +354,70 @@ public class XRGrabable : XRInteractable
             }
         }
     }
-
+    #region Mount
+    XRMountPoint mounted = null;
+    Collider[] colliderBuffer = new Collider[20];
+    XRMountPoint GetMountHovering()
+    {
+        int n=Physics.OverlapSphereNonAlloc(mountRef.position, .1f, colliderBuffer,-1,queryTriggerInteraction:QueryTriggerInteraction.Collide);
+        for(int i=0;i<n;++i)
+        {
+            var c = colliderBuffer[i];
+            if (c.attachedRigidbody)
+            {
+                var mp = c.GetComponent<XRMountPoint>();
+                if (mp && mp.isActiveAndEnabled)
+                {
+                    if (mp.acceptedMountTags.Contains(mountTag))
+                        return mp;
+                }
+            }
+        }
+        return null;
+    }
+    public void TryMount(XRMountPoint newMountPoint)
+    {
+        if (newMountPoint.CanMount(this))
+        {
+            DetachIfAttached();
+            UnmountIfMounted();
+            _Mount(newMountPoint);
+        }
+    }
+    void _Mount(XRMountPoint newMountPoint)
+    {
+        attachedPositionLS = transform.InverseTransformPoint(mountRef.position);
+        attachedRotationLS = Quaternion.Inverse(transform.rotation) * mountRef.rotation;
+        desiredPosition = newMountPoint.transform.position - desiredRotation * Quaternion.Inverse(transform.rotation) * transform.TransformVector(attachedPositionLS);
+        desiredRotation = newMountPoint.transform.rotation * Quaternion.Inverse(attachedRotationLS);
+        transform.position = desiredPosition;
+        transform.rotation = desiredRotation;
+        body.isKinematic = true;
+        mounted = newMountPoint;
+        newMountPoint.Mount(this);
+        updateEvents.onMount.Invoke();
+        updateEvents.updateAttach.Invoke(newMountPoint.transform);
+    }
+    void UpdateMounted(float dt)
+    {
+        desiredPosition = mounted.transform.position - desiredRotation * Quaternion.Inverse(transform.rotation) * transform.TransformVector(attachedPositionLS);
+        desiredRotation = mounted.transform.rotation * Quaternion.Inverse(attachedRotationLS);
+        transform.position = desiredPosition;
+        transform.rotation = desiredRotation;
+    }
+    public void UnmountIfMounted()
+    {
+        if (mounted) _UnMount();
+    }
+    void _UnMount()
+    {
+        body.isKinematic = false;
+        mounted.UnMount(this);
+        mounted = null;
+        updateEvents.onUnMount.Invoke();
+        updateEvents.updateAttach.Invoke(null);
+    }
+    #endregion
     #region Joint
     static (ConfigurableJoint, Quaternion) BuildJoint(Rigidbody body, Rigidbody attachedRigidbody, XRJointSettings jointSettings)
     {
