@@ -40,6 +40,9 @@ public class XRPlayerLocomotion : MonoBehaviour
     public float stepHeight = .3f;
     public float slopeLimit = 60f;
     public float jumpSpeed = 4.5f;
+    public float wingSuitSpeed = 7f;
+    public float wingSuitSlope = 30f;
+    public float hookSpeed = 10f;
 
     [Header("Confort Setting")]
     public float rotateSmoothTime = .1f;
@@ -287,6 +290,49 @@ public class XRPlayerLocomotion : MonoBehaviour
         //Start Moving Character
         fallingVelocity += Physics.gravity * dt;
         fallingVelocity = Vector3.Dot(fallingVelocity-fallingVelocityReference, up) * up+fallingVelocityReference + (inputDelta + trackedDelta) / dt;
+        Vector3 delta = fallingVelocity * dt;
+
+        //Check Grounded
+        bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
+            .9f * R * scale, TD(0, -1, 0), out RaycastHit groundHit, 2 * stepHeight * scale, groundLayers);
+        float groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
+        if (isThisStep && groundDist + Vector3.Dot(fallingVelocity * dt, up) <= .1f * R * scale)
+            TransitionState(GroundedState);
+
+        //Move the Character and camera
+        {
+            delta = SweepCollider(delta, slide: true);
+            transform.position += delta;
+            trackingSpace.position -= trackedDelta;
+            //if (inputDelta.magnitude > 0) 
+            ResolveCollision();
+        }
+    }
+    void UpdateWingSuit(float dt)
+    {
+        if (teleportMode == true) { TransitionState(TeleportModeState); return; }
+
+        //height and rotation
+        AdjustColliderAndHead();
+        DealInputRotation();
+        DealTrackedRotation();
+
+        //Head Movement
+        Vector3 trackedDelta = Vector3.ProjectOnPlane(head.position - transform.position, up);
+        if (trackedDelta.magnitude > headTeleportDistance)
+        {
+            trackingSpace.position -= trackedDelta;
+            trackedDelta = Vector3.zero;
+        }
+
+        //Input Movement
+        Vector3 inputVectorW = Vector3.ProjectOnPlane(inputRef.TransformDirection(new Vector3(inputStick.x, 0, inputStick.y)), Vector3.up).normalized * inputStick.magnitude;
+        float curSpeed = inputDash ? dashSpeed : speed;
+        Vector3 inputDelta = inputVectorW * curSpeed * scale * dt;
+
+        //Start Moving Character
+        fallingVelocity += Physics.gravity * dt;
+        fallingVelocity = Vector3.Dot(fallingVelocity - fallingVelocityReference, up) * up + fallingVelocityReference + (inputDelta + trackedDelta) / dt;
         Vector3 delta = fallingVelocity * dt;
 
         //Check Grounded
