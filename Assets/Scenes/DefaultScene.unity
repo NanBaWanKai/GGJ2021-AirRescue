@@ -709,7 +709,12 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 3920603395259072207, guid: 9cd0b51d7dfb4bf48ba2d4f3b185d1d2, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 2395babbe77dbf644867b4a1b9077faf, type: 2}
+    m_RemovedComponents:
+    - {fileID: 2195839402556854810, guid: 9cd0b51d7dfb4bf48ba2d4f3b185d1d2, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 9cd0b51d7dfb4bf48ba2d4f3b185d1d2, type: 3}
 --- !u!1001 &853936824
 PrefabInstance:
@@ -766,7 +771,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: girl-beach_Rig
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 4621607418563680059, guid: 5d7ee2c855ee34c4f91376399631dbca, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 2395babbe77dbf644867b4a1b9077faf, type: 2}
+    m_RemovedComponents:
+    - {fileID: 4621607418556359238, guid: 5d7ee2c855ee34c4f91376399631dbca, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 5d7ee2c855ee34c4f91376399631dbca, type: 3}
 --- !u!1001 &1078122344
 PrefabInstance:
@@ -823,7 +833,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: woman-swimming-guard_Rig
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 7617675109614749907, guid: 8d63fbb3986389f47b313555b59ca23c, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 2395babbe77dbf644867b4a1b9077faf, type: 2}
+    m_RemovedComponents:
+    - {fileID: 7617675109607472574, guid: 8d63fbb3986389f47b313555b59ca23c, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 8d63fbb3986389f47b313555b59ca23c, type: 3}
 --- !u!1 &1119809973
 GameObject:
@@ -982,6 +997,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6339180809402329297, guid: cbdcf08b8f1f06c4bbbfb8dedfb8846e, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 2395babbe77dbf644867b4a1b9077faf, type: 2}
     - target: {fileID: 6339180809411413807, guid: cbdcf08b8f1f06c4bbbfb8dedfb8846e, type: 3}
       propertyPath: m_RootOrder
       value: 1
@@ -1030,7 +1049,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: man-beach_Rig
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6339180809411812782, guid: cbdcf08b8f1f06c4bbbfb8dedfb8846e, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: cbdcf08b8f1f06c4bbbfb8dedfb8846e, type: 3}
 --- !u!114 &1549855031 stripped
 MonoBehaviour:
