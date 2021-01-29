@@ -29,14 +29,18 @@ public class NetworkObjectsWizard : MonoBehaviour
         grabable.outline = outline;
 
         grabableView.onOtherPlayerTake = new UnityEvent();
-        grabable.onDrop = new UnityEvent();
-        grabable.onPickUp = new UnityEvent();
-        grabable.updateAttach = new XRGrabable.UpdateTransform();
+        grabable.updateEvents.onDrop = new UnityEvent();
+        grabable.updateEvents.onPickUp = new UnityEvent();
+        grabable.updateEvents.onMount = new UnityEvent();
+        grabable.updateEvents.onUnMount = new UnityEvent();
+        grabable.updateEvents.updateAttach = new XRGrabable.UpdateTransform();
 
-        UnityEventTools.AddPersistentListener(grabableView.onOtherPlayerTake, grabable.DetachIfAttached);
-        UnityEventTools.AddPersistentListener(grabable.onDrop, grabableView.OnLocalPlayerDrop);
-        UnityEventTools.AddPersistentListener(grabable.onPickUp, grabableView.OnLocalPlayerPickup);
-        UnityEventTools.AddPersistentListener(grabable.updateAttach, grabableView.SetAttach);
+        UnityEventTools.AddPersistentListener(grabableView.onOtherPlayerTake, grabable.OnOtherPlayerTake);
+        UnityEventTools.AddPersistentListener(grabable.updateEvents.onDrop, grabableView.OnLocalPlayerDrop);
+        UnityEventTools.AddPersistentListener(grabable.updateEvents.onPickUp, grabableView.OnLocalPlayerPickup);
+        UnityEventTools.AddPersistentListener(grabable.updateEvents.onMount, grabableView.OnLocalPlayerMount);
+        UnityEventTools.AddPersistentListener(grabable.updateEvents.onUnMount, grabableView.OnLocalPlayerUnMount);
+        UnityEventTools.AddPersistentListener(grabable.updateEvents.updateAttach, grabableView.SetAttach);
         string prompt=  "Completed! You should Configure:\n" +
              "1. rigidbody.collisionDetectionMode, \n" +
              "2. rigidbody.mass, \n" +
