@@ -4,6 +4,7 @@ using UnityEngine;
 
 public sealed class Manager : MonoBehaviour
 {
+
     private static Manager s_intance;
     public static Manager Instance => s_intance;
 
@@ -11,8 +12,13 @@ public sealed class Manager : MonoBehaviour
     string m_defaultSceneName;
     [SerializeField]
     Client m_client;
+    [SerializeField]
+    LevelManager m_levelManager;
 
     public Client Client => m_client;
+    public LevelManager LevelManager => m_levelManager;
+
+
 
     private void Awake()
     {
@@ -23,6 +29,8 @@ public sealed class Manager : MonoBehaviour
     {
         m_client.SceneLoader.LoadScene(m_defaultSceneName);
     }
+
+
 
 
 }

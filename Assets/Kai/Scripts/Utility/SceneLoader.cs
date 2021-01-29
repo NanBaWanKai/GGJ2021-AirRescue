@@ -40,19 +40,11 @@ namespace IFancing
         #region PUBLIC
         public void LoadScene(string sceneName)
         {
-            StartCoroutine(LoadSceneEnumerator(sceneName));
-        }
-        private IEnumerator LoadSceneEnumerator(string sceneName)
-        {
-            if (m_currentSceneName != null)
-            {
-                yield return SceneManager.UnloadSceneAsync(m_currentSceneName);
-            }
             if (sceneName != null)
             {
                 m_currentSceneName = sceneName;
                 OnLoadStart?.Invoke(sceneName);
-                yield return SceneManager.LoadSceneAsync(m_currentSceneName);
+                PhotonNetwork.LoadLevel(m_currentSceneName);
                 OnLoadEnd?.Invoke(sceneName);
             }
         }

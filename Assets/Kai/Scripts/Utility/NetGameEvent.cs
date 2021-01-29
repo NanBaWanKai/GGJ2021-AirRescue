@@ -65,8 +65,6 @@ namespace IFancing.Net
         public const string UPDATE_PLAYER_PROPERTY = "UPDATE_PLAYER_PROPERTY";//<>无参数 广播房间内玩家属性刷新事件
         public const string LOAD_LEVEL = "LOAD_LEVEL";//<levelName:string> 广播场景加载事件
 
-        public const string DETECT_INTERACTABLE = "DETECT_INTERACTABLE";//交互物体： GameObject
-        public const string UNDETECT_INTERACTABLE = "UNDETECT_INTERACTABLE";//交互物体：GameObject
 
 
         /// <summary>

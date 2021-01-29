@@ -77,7 +77,7 @@ public class Client : MonoBehaviour, IClient
     NetGameEvent m_netGameEvent;
     [SerializeField]
     [Tooltip("Level的加载和卸载")]
-    SceneLoader m_levelLoader;
+    SceneLoader m_sceneLoader;
     //[SerializeField]
     //[Tooltip("Master服务器的IP地址")]
     //string m_masterIP;
@@ -88,7 +88,7 @@ public class Client : MonoBehaviour, IClient
     public bool IsLogin => m_isLogin;
     public ILauncher Launcher => m_launcher;
     public INetGameEvent NetGameEvent => m_netGameEvent;
-    public ISceneLoader SceneLoader => m_levelLoader;
+    public ISceneLoader SceneLoader => m_sceneLoader;
 
     public IGateServerConnect GateServer => m_gateConn;
 
@@ -136,16 +136,26 @@ public class Client : MonoBehaviour, IClient
     }
     private void OnEnable()
     {
+        m_launcher.OnJoinRoomEndEvent += OnJoinRoomEndEvent;
         m_launcher.OnLeaveRoomStartEvent += OnLeaveRoomStart;
     }
 
     private void OnDisable()
     {
+        m_launcher.OnJoinRoomEndEvent -= OnJoinRoomEndEvent;
         m_launcher.OnLeaveRoomStartEvent -= OnLeaveRoomStart;
     }
+    void OnJoinRoomEndEvent(RoomOptions roomOptions)
+    {
+        if (m_launcher.IsMasterClient)
+        {
+            m_sceneLoader.LoadScene("WaitRoom");
+        }
+    }
+
 
     void OnLeaveRoomStart()
     {
-        m_levelLoader.LoadScene("Lobby");
+        m_sceneLoader.LoadScene("Lobby");
     }
 }

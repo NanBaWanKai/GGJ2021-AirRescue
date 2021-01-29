@@ -1,70 +1,109 @@
 using DG.Tweening;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-public sealed class LobbyCanvas : MonoBehaviour
+public sealed class LobbyCanvas : PanelBase
 {
-    [SerializeField]
-    Button m_GOBtn;
     [SerializeField]
     TMP_InputField m_playerNameInputField;
     [SerializeField]
     GameObject m_connectPanel;
     [SerializeField]
-    GameObject m_keyboardPanel;
-    [SerializeField]
-    GameObject m_loadingPanel;
+    GameObject m_waitingPanel;
     [SerializeField]
     GameObject m_lobbyPanel;
+    [SerializeField]
+    GameObject m_createRoomPanel;
+    [SerializeField]
+    GameObject m_joinRoomPanel;
 
 
-    private void Awake()
+
+
+    protected override void Awake()
     {
+        base.Awake();
         m_connectPanel.SetActive(true);
-        m_keyboardPanel.SetActive(true);
-        m_loadingPanel.SetActive(false);
+        m_waitingPanel.SetActive(false);
         m_lobbyPanel.SetActive(false);
-        m_GOBtn.onClick.AddListener(() =>
-        {
-            if (m_playerNameInputField.text != null && m_playerNameInputField.text != "")
-            {
-                Manager.Instance.Client.Launcher.ConnectToMaster(m_playerNameInputField.text);
-                m_connectPanel.SetActive(false);
-                m_loadingPanel.SetActive(true);
-            }
-        });
-        m_playerNameInputField.onSelect.AddListener((str) =>
-        {
-            m_connectPanel.SetActive(false);
-            m_keyboardPanel.GetComponent<DOTweenAnimation>().DORewind();
-            m_keyboardPanel.GetComponent<DOTweenAnimation>().DOPlayForward();
+        m_createRoomPanel.SetActive(false);
+        m_joinRoomPanel.SetActive(false);
 
-        });
-        m_keyboardPanel.GetComponent<KeyboardVR>().OnPressEnter += (str) =>
-        {
-            m_connectPanel.SetActive(true);
-            m_keyboardPanel.GetComponent<DOTweenAnimation>().DOPlayBackwards();
-            m_playerNameInputField.text = str;
-        };
-
+      
+    }
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        Manager.Instance.Client.Launcher.OnConnectToMasterEvent += OnConnectToMasterServer;
+        Manager.Instance.Client.Launcher.OnJoinLobbyEvent += OnJoinLobby;
+        Manager.Instance.Client.Launcher.OnDisconnectToMasterEvent += OnDisconnectToMaster;
+    }
+    protected override void OnDisable()
+    {
+        base.OnEnable();
+        Manager.Instance.Client.Launcher.OnConnectToMasterEvent -= OnConnectToMasterServer;
+        Manager.Instance.Client.Launcher.OnConnectToMasterEvent -= OnJoinLobby;
+        Manager.Instance.Client.Launcher.OnDisconnectToMasterEvent -= OnDisconnectToMaster;
 
     }
-    private void OnEnable()
+    private void OnConnectToMasterServer()
     {
-        Manager.Instance.Client.Launcher.OnConnectToMasterEvent += OnConnectToMasterEvent;
-    }
 
-    private void OnDisable()
-    {
-        Manager.Instance.Client.Launcher.OnConnectToMasterEvent -= OnConnectToMasterEvent;
     }
-
-    private void OnConnectToMasterEvent()
+    private void OnJoinLobby()
     {
-        m_loadingPanel.SetActive(false);
+        m_waitingPanel.SetActive(false);
         m_lobbyPanel.SetActive(true);
     }
+    private void OnDisconnectToMaster(DisconnectCause cause)
+    {
+        m_waitingPanel.SetActive(false);
+        m_connectPanel.SetActive(true);
+    }
 
+    protected override void SubscribeButtonClickEvent(string btnName)
+    {
+        base.SubscribeButtonClickEvent(btnName);
+        switch (btnName)
+        {
+            case "GOBtn":
+                if (m_playerNameInputField.text != null && m_playerNameInputField.text != "")
+                {
+                    Manager.Instance.Client.Launcher.ConnectToMaster(m_playerNameInputField.text);
+                    m_connectPanel.SetActive(false);
+                    m_waitingPanel.SetActive(true);
+                }
+                break;
+            case "CreateRoomBtn":
+                m_lobbyPanel.SetActive(false);
+                m_createRoomPanel.SetActive(true);
+                break;
+            case "JoinRoomBtn":
+                m_lobbyPanel.SetActive(false);
+                m_joinRoomPanel.SetActive(true);
+                break;
+            case "CreateRoomBackBtn":
+                m_lobbyPanel.SetActive(true);
+                m_createRoomPanel.SetActive(false);
+                break;
+            case "JoinRoomBackBtn":
+                m_lobbyPanel.SetActive(true);
+                m_joinRoomPanel.SetActive(false);
+                break;
+        }
+    }
+    protected override void SubscribeInputfieldSelectEvent(TMP_InputField inputField, string str)
+    {
+        base.SubscribeInputfieldSelectEvent(inputField, str);
+        switch (inputField.name)
+        {
+            case "PlayerNameInputField":
+                m_keyboardCachePanel = m_connectPanel;
+                m_keyboardCachePanel.SetActive(false);
+                break;
+        }
+    }
 }
