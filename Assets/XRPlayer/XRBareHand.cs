@@ -8,6 +8,7 @@ public class XRBareHand : MonoBehaviour
     public XRHand hand;
     public Rigidbody attachedRigidbody;
     public XRJointSettings jointSetting;
+    public Collider[] handColliders;
     public float lostTrackDist = .3f;
     //float smoothVelocityTime = .01f; No Need of this. Hand tracking error too small, and it increase the responce time to player locomotion
 
@@ -17,9 +18,25 @@ public class XRBareHand : MonoBehaviour
     Vector3 attachedOldPosition;
     Vector3 estimatedVelocity;
 
+
     private void Awake()
     {
         body = GetComponent<Rigidbody>();
+        if (!isActiveAndEnabled)
+            OnDisable();
+    }
+
+    private void OnEnable()
+    {
+        body.isKinematic = false;
+        foreach (var c in handColliders)
+            c.enabled = true;
+    }
+    private void OnDisable()
+    {
+        body.isKinematic = true;
+        foreach (var c in handColliders)
+            c.enabled = false;
     }
 
     private void Start()
@@ -111,31 +128,19 @@ public class XRBareHand : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)//Will be called before start
     {
-        float speed = 1f;
-        if (collision.contactCount > 0)
+        if (isActiveAndEnabled)
         {
-            Vector3 point = collision.GetContact(0).point;
-            Vector3 v1 = body.GetPointVelocity(point);
-            Vector3 v2 = collision.rigidbody ? collision.rigidbody.GetPointVelocity(point) : Vector3.zero;
-            speed = (v2 - v1).magnitude/hand.playerRoot.lossyScale.x;
+            float speed = 1f;
+            if (collision.contactCount > 0)
+            {
+                Vector3 point = collision.GetContact(0).point;
+                Vector3 v1 = body.GetPointVelocity(point);
+                Vector3 v2 = collision.rigidbody ? collision.rigidbody.GetPointVelocity(point) : Vector3.zero;
+                speed = (v2 - v1).magnitude / hand.playerRoot.lossyScale.x;
+            }
+            float strength = Mathf.Lerp(0, hand.hapticSettings.collisionEnterMaxStrength, speed / hand.hapticSettings.collisionEnterMaxStrengthSpeed);
+            hand.SendHapticImpulse(strength, hand.hapticSettings.collisionEnterDuration);
         }
-        float strength = Mathf.Lerp(0, hand.hapticSettings.collisionEnterMaxStrength, speed / hand.hapticSettings.collisionEnterMaxStrengthSpeed);
-        hand.SendHapticImpulse(strength, hand.hapticSettings.collisionEnterDuration);
-
-        //if (collision.rigidbody)
-        //{
-        //    Debug.Log("Collide with body " + collision.rigidbody.name + body.velocity + " " + collision.rigidbody.velocity);
-        //}
-    }
-    private void OnCollisionStay(Collision collision)
-    {
-        //if (collision.rigidbody)
-        //{
-        //    Debug.Log("Collide with body " + collision.rigidbody.name + body.velocity + " " + collision.rigidbody.velocity);
-        //}
-    }
-    private void OnCollisionExit(Collision collision)
-    {
     }
     private void OnValidate()
     {

@@ -722,6 +722,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: boy-beach_Rig
       objectReference: {fileID: 0}
+    - target: {fileID: 3920603395249540365, guid: 9cd0b51d7dfb4bf48ba2d4f3b185d1d2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3920603395249770797, guid: 9cd0b51d7dfb4bf48ba2d4f3b185d1d2, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -828,6 +832,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: girl-beach_Rig
       objectReference: {fileID: 0}
+    - target: {fileID: 4621607418556392697, guid: 5d7ee2c855ee34c4f91376399631dbca, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4621607418563680059, guid: 5d7ee2c855ee34c4f91376399631dbca, type: 3}
       propertyPath: m_Controller
       value: 
@@ -889,6 +897,10 @@ PrefabInstance:
     - target: {fileID: 7617675109607504747, guid: 8d63fbb3986389f47b313555b59ca23c, type: 3}
       propertyPath: m_Name
       value: woman-swimming-guard_Rig
+      objectReference: {fileID: 0}
+    - target: {fileID: 7617675109607504747, guid: 8d63fbb3986389f47b313555b59ca23c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7617675109614749907, guid: 8d63fbb3986389f47b313555b59ca23c, type: 3}
       propertyPath: m_Controller
@@ -1118,6 +1130,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 540d2aeb20d6ced47878bbcafda4ae99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &1803725433 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6339180809411844877, guid: cbdcf08b8f1f06c4bbbfb8dedfb8846e, type: 3}
+  m_PrefabInstance: {fileID: 1191839329}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1803725434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1803725433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9608cef125435dd47a6ad31a7243cdcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1822781394
