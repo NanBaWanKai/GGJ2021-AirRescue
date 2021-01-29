@@ -15,9 +15,9 @@ public class OccupyView : MonoBehaviourPun
     {
         public UnityEvent onOtherOccupied;
         public UnityEvent onOtherFree;
-        public float occupancyCD = 0;
-        public float refreshOccupancyCD;
-        public OccupancyState occupancyState = OccupancyState.Free;
+        [HideInInspector] public float occupancyCD = 0;
+        [HideInInspector] public float refreshOccupancyCD;
+        [HideInInspector] public OccupancyState occupancyState = OccupancyState.Free;
     }
     public enum OccupancyState { Free, OccupiedByOthers, OccupiedByLocalPlayer }
     public SubOccupyView[] occupyViews;

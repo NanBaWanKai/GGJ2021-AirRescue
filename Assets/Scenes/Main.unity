@@ -280,7 +280,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f110e792656f4747ba3d706acc059a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_serverSettings: {fileID: 11400000, guid: 42701b77f1ba0074bbb502dacf7f3a9d, type: 2}
 --- !u!1 &1174930951
 GameObject:
   m_ObjectHideFlags: 0
@@ -383,6 +382,9 @@ MonoBehaviour:
     m_sprite: {fileID: 21300000, guid: bd293dc32f4aaf94e8274f2fac2cdf89, type: 3}
   - m_levelName: Demo1
     m_sceneName: LevelDemo1
+    m_sprite: {fileID: 21300000, guid: 56bbc6b42271d4177ac313247f47ac1f, type: 3}
+  - m_levelName: Demo2
+    m_sceneName: TestScene
     m_sprite: {fileID: 21300000, guid: 56bbc6b42271d4177ac313247f47ac1f, type: 3}
 --- !u!1 &1564488951
 GameObject:

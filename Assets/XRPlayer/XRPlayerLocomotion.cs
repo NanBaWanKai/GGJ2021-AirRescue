@@ -81,11 +81,6 @@ public class XRPlayerLocomotion : MonoBehaviour
 
     public static XRPlayerLocomotion instance;
 
-    private void OnEnable()
-    {
-        Debug.Log("XRPlayerLocomotion OnEnable");
-        instance = this;
-    }
     private void OnDisable()
     {
         Debug.Log("XRPlayerLocomotion OnDisable");
@@ -99,12 +94,18 @@ public class XRPlayerLocomotion : MonoBehaviour
         //Debug.Assert(((1 << headCollider.gameObject.layer) & environmentLayers) == 0);
         Debug.Assert(Time.fixedDeltaTime <= 1 / 60f);
     }
-    private void Start()
+    private void Awake()
     {
         capsuleCollider = GetComponent<CapsuleCollider>();
         foreach (var c in GetComponentsInChildren<CapsuleCollider>())
             if (c != capsuleCollider)
                 Physics.IgnoreCollision(c, capsuleCollider);
+        SetupStates();
+    }
+    private void OnEnable()
+    {
+        Debug.Log("XRPlayerLocomotion OnEnable");
+        instance = this;
 
         //Setting Tracking Origin to Floor, default device on Oculus Quest
         var xrInputSubsystems = new List<XRInputSubsystem>();
@@ -113,35 +114,13 @@ public class XRPlayerLocomotion : MonoBehaviour
 
         teleportLine.enabled = false;
 
-        GroundedState = new State("Grounded");
-        GroundedState.OnEnter = EnterGrounded;
-        GroundedState.OnExit = ExitGrounded;
-        GroundedState.Update = UpdateGrounded;
-
-        FallingState = new State("Falling");
-        FallingState.Update = UpdateFalling;
-
-        TeleportModeState = new State("TeleportMode");
-        TeleportModeState.OnEnter = EnterTeleportMode;
-        TeleportModeState.OnExit = ExitTeleportMode;
-        TeleportModeState.Update = UpdateTeleportMode;
-
-        SeatedState = new State("Seated");
-        SeatedState.OnEnter = EnterSeated;
-        SeatedState.OnExit = ExitSeated;
-        SeatedState.Update = UpdateSeated;
-        SeatedState.LateUpdate = LateUpdateSeated;
-
-        HookState = new State("Hook");
-        HookState.Update = UpdateHook;
-
-        TransitionState(GroundedState);
-
         var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
         SubsystemManager.GetInstances<XRDisplaySubsystem>(xrDisplaySubsystems);
         mouseLook = !xrDisplaySubsystems.Exists(x => x.running);
 
         teleportCheck = transform.position;
+
+        TransitionState(GroundedState);
     }
     private void Update()
     {
@@ -175,6 +154,32 @@ public class XRPlayerLocomotion : MonoBehaviour
 
         //different amount of fixedupdate will be executed between screen renders. Which result in Stuttering rotation. Smooth it
 
+
+    void SetupStates()
+    {
+
+        GroundedState = new State("Grounded");
+        GroundedState.OnEnter = EnterGrounded;
+        GroundedState.OnExit = ExitGrounded;
+        GroundedState.Update = UpdateGrounded;
+
+        FallingState = new State("Falling");
+        FallingState.Update = UpdateFalling;
+
+        TeleportModeState = new State("TeleportMode");
+        TeleportModeState.OnEnter = EnterTeleportMode;
+        TeleportModeState.OnExit = ExitTeleportMode;
+        TeleportModeState.Update = UpdateTeleportMode;
+
+        SeatedState = new State("Seated");
+        SeatedState.OnEnter = EnterSeated;
+        SeatedState.OnExit = ExitSeated;
+        SeatedState.Update = UpdateSeated;
+        SeatedState.LateUpdate = LateUpdateSeated;
+
+        HookState = new State("Hook");
+        HookState.Update = UpdateHook;
+    }
     #region Grounded and Falling
     void UpdateGrounded(float dt)
     {

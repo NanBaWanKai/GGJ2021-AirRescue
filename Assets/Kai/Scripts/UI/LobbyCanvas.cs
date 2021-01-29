@@ -40,6 +40,7 @@ public sealed class LobbyCanvas : PanelBase
         Manager.Instance.Client.Launcher.OnConnectToMasterEvent += OnConnectToMasterServer;
         Manager.Instance.Client.Launcher.OnJoinLobbyEvent += OnJoinLobby;
         Manager.Instance.Client.Launcher.OnDisconnectToMasterEvent += OnDisconnectToMaster;
+        m_playerNameInputField.text = $"Player{Random.Range(1000, 9999)}";
     }
     protected override void OnDisable()
     {

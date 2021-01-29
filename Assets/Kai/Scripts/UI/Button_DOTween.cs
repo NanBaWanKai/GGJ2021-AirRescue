@@ -183,13 +183,4 @@ public class Button_DOTween : BasicButton_DOTween
     {
         base.SetSelected(value);
     }
-
-    protected override void Reset()
-    {
-        base.Reset();
-        var nav = Navigation.defaultNavigation;
-        nav.mode = Navigation.Mode.None;
-        navigation = nav;
-        transition = Transition.None;
-    }
 }

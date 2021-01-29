@@ -82,8 +82,8 @@ namespace Wacki {
 
         public void OnDisable()
         {
-            hitPoint.SetActive(false);
-            pointer.SetActive(false);
+            hitPoint?.SetActive(false);
+            pointer?.SetActive(false);
         }
 
         public bool ButtonDown()

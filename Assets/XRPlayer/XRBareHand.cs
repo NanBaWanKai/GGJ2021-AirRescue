@@ -29,11 +29,13 @@ public class XRBareHand : MonoBehaviour
     private void OnEnable()
     {
         body.isKinematic = false;
+        body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         foreach (var c in handColliders)
             c.enabled = true;
     }
     private void OnDisable()
     {
+        body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
         body.isKinematic = true;
         foreach (var c in handColliders)
             c.enabled = false;
