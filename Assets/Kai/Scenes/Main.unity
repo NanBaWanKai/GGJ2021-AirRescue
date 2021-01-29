@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 122709098}
   - component: {fileID: 122709099}
+  - component: {fileID: 122709100}
   m_Layer: 0
   m_Name: NetGameEvent
   m_TagString: Untagged
@@ -166,6 +167,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd36908a9aeab2440b79d3c0412cc58e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &122709100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 122709097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  observableSearch: 2
+  Synchronization: 3
+  OwnershipTransfer: 0
+  ObservedComponents: []
+  viewIdField: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &917416905
 GameObject:
   m_ObjectHideFlags: 0
@@ -195,6 +218,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1174930952}
+  - {fileID: 1259743145}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -212,6 +236,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_defaultSceneName: Lobby
   m_client: {fileID: 1174930953}
+  m_levelManager: {fileID: 1259743146}
 --- !u!1 &1100989359
 GameObject:
   m_ObjectHideFlags: 0
@@ -308,7 +333,57 @@ MonoBehaviour:
   m_gateConn: {fileID: 1596516653}
   m_launcher: {fileID: 1100989361}
   m_netGameEvent: {fileID: 122709099}
-  m_levelLoader: {fileID: 1731140395}
+  m_sceneLoader: {fileID: 1731140395}
+--- !u!1 &1259743144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1259743145}
+  - component: {fileID: 1259743146}
+  m_Layer: 0
+  m_Name: LevelManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1259743145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259743144}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 917416906}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1259743146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259743144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b268660df8890564db3efcef8ba2e7b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_levels:
+  - m_levelName: Demo0
+    m_sceneName: LevelDemo
+    m_sprite: {fileID: 21300000, guid: bd293dc32f4aaf94e8274f2fac2cdf89, type: 3}
+  - m_levelName: Demo1
+    m_sceneName: LevelDemo1
+    m_sprite: {fileID: 21300000, guid: 56bbc6b42271d4177ac313247f47ac1f, type: 3}
 --- !u!1 &1564488951
 GameObject:
   m_ObjectHideFlags: 0

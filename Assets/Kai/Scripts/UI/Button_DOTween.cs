@@ -118,6 +118,23 @@ public class Button_DOTween : BasicButton_DOTween
             m_text.color = colors.normalColor;
         }
     }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        foreach (var item in m_highlight_ani)
+        {
+            item.DORewind();
+        }
+        foreach (var item in m_click_ani)
+        {
+            item.DORewind();
+        }
+    }
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+    }
     protected override void PointerEnter_Method()
     {
         foreach (var item in m_highlight_ani)

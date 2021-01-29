@@ -107,6 +107,14 @@ namespace IFancing.Net
         /// </summary>
         event Action OnLeaveLobbyEvent;
         /// <summary>
+        /// 当创建房间的时回调
+        /// </summary>
+        event Action OnCreateRoomEvent;
+        /// <summary>
+        /// 当创建房间失败时回调
+        /// </summary>
+        event Action<short, string> OnCreateRoomFailedEvent;
+        /// <summary>
         /// 当开始加入房间时回调
         /// </summary>
         event Action OnJoinRoomStartEvent;
@@ -167,16 +175,16 @@ namespace IFancing.Net
     {
         public const string ROOM_NAME = "ROOM_NAME";
         public const string ROOM_FACADE_NAME = "ROOM_FACADE_NAME";
-        public const string ROOM_STATE = "ROOM_STATE";// 房间状态, "0"：准备中，"1"：游戏中，"100"：结算中，"2":知识问答中
+        public const string LEVEL_INDEX = "LEVEL_INDEX";
+        public const string ROOM_STATE = "ROOM_STATE";// 房间状态, "0"：准备中，"1"：游戏中，"100"：结算中
 
         public const string PLAYER_READY = "PLAYER_READY";
-        public const string PLAYER_IS_STUDENT = "PLAYER_IS_STUDENT";
         private ExitGames.Client.Photon.Hashtable m_playerPropertyCache = new ExitGames.Client.Photon.Hashtable();
 
 
-        public const byte MAX_PLAYER = 6;
-        [SerializeField]
-        private ServerSettings m_serverSettings;
+        //public const byte MAX_PLAYER = 6;
+        //[SerializeField]
+        //private ServerSettings m_serverSettings;
         private RoomOptions m_roomOptionsCache = null;
         [SerializeField]
         private Dictionary<string, RoomInfo> m_cachedRoomList = new Dictionary<string, RoomInfo>();
@@ -195,6 +203,9 @@ namespace IFancing.Net
         public event Action OnLeaveRoomStartEvent;
         public event Action OnLeaveRoomEndEvent;
         public event Action OnJoinRoomStartEvent;
+        public event Action OnCreateRoomEvent;
+        public event Action<short, string> OnCreateRoomFailedEvent;
+
         public event Action<RoomOptions> OnJoinRoomEndEvent;
         public event Action OnConnectToMasterEvent;
         public event Action<DisconnectCause> OnDisconnectToMasterEvent;
@@ -206,8 +217,8 @@ namespace IFancing.Net
         private void Awake()
         {
             DontDestroyOnLoad(this);
+            PhotonNetwork.AutomaticallySyncScene = true;
             m_playerPropertyCache.Add(PLAYER_READY, false);
-            m_playerPropertyCache.Add(PLAYER_IS_STUDENT, true);
             LocalPlayer.SetCustomProperties(m_playerPropertyCache);
         }
 
@@ -230,12 +241,10 @@ namespace IFancing.Net
             base.OnConnectedToMaster();
             OnConnectToMasterEvent?.Invoke();
             JoinLobby();
-            print("ConnectToMaster");
         }
         public void JoinLobby()
         {
             PhotonNetwork.JoinLobby();
-
         }
         public void LeaveLobby()
         {
@@ -290,10 +299,24 @@ namespace IFancing.Net
                 }
             }
         }
+        public override void OnCreatedRoom()
+        {
+            base.OnCreatedRoom();
+            print("OnCreateRoom");
+            OnCreateRoomEvent?.Invoke();
+        }
+
+        public override void OnCreateRoomFailed(short returnCode, string message)
+        {
+            base.OnCreateRoomFailed(returnCode, message);
+            OnCreateRoomFailedEvent?.Invoke(returnCode, message);
+
+        }
         public override void OnJoinedRoom()
         {
             base.OnJoinedRoom();
             OnJoinRoomEndEvent?.Invoke(m_roomOptionsCache);
+            print("OnJoinedRoom");
         }
         public override void OnJoinRoomFailed(short returnCode, string message)
         {
@@ -383,7 +406,6 @@ namespace IFancing.Net
         void ResetLocalPlayerProperty()
         {
             m_playerPropertyCache[PLAYER_READY] = false;
-            m_playerPropertyCache[PLAYER_IS_STUDENT] = true;
             LocalPlayer.SetCustomProperties(m_playerPropertyCache);
         }
 
