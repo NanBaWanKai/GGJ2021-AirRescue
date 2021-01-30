@@ -11,6 +11,8 @@ public class XRMountPoint : MonoBehaviour
     public Rigidbody body;
     [HideInInspector]
     public XRGrabable mounted;
+
+
     public bool CanMount(XRGrabable g)
     {
         if (!isActiveAndEnabled) return false;
@@ -20,6 +22,8 @@ public class XRMountPoint : MonoBehaviour
     public void Mount(XRGrabable g)
     {
         if (mounted) mounted.UnmountIfMounted();
+        g.DetachIfAttached();
+        g.UnmountIfMounted();
         mounted = g;
     }
     public void UnMount(XRGrabable g)

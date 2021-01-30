@@ -42,7 +42,7 @@ public class CapsuleController : MonoBehaviour
         }
         else return Vector3.zero;
     }
-    void SetAttach(Transform attached, Vector3 attachAnchorPositionLS)
+    public void SetAttach(Transform attached, Vector3 attachAnchorPositionLS)
     {
         this.attached = attached;
         this.attachAnchorPositionLS = attachAnchorPositionLS;
@@ -57,13 +57,10 @@ public class CapsuleController : MonoBehaviour
         if (attached) attachedPositionLS = attached.InverseTransformPoint(attachedPointWS);
         updateAttach.Invoke(this.attached);
     }
-    void SetAttach(Transform attached, Vector3 attachedPositionLS, Vector3 attachAnchorPositionLS)
-    {
-        SetAttach(attached, attachedPositionLS);
-        this.attachAnchorPositionLS = attachAnchorPositionLS;
-    }
     #endregion
     #region CapsuleCollider
+    public Vector3 position { get => transform.position; set => transform.position = value; }
+    public Quaternion rotation { get => transform.rotation; set => transform.rotation = value; }
     CapsuleCollider capsuleCollider;
     float R => capsuleCollider.radius;
     float H => capsuleCollider.height;
@@ -79,7 +76,7 @@ public class CapsuleController : MonoBehaviour
     {
         float stepDist = Mathf.Max(delta.magnitude, R * scale);
         isNextStepHit = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0) + delta.normalized * Mathf.Max(.9f * R * scale, delta.magnitude),
-            .9f * R * scale, TD(0, -1, 0), out RaycastHit nextStepHit, 2 * stepHeight * scale, groundLayers);
+            .9f * R * scale, TD(0, -1, 0), out RaycastHit nextStepHit, 2 * stepHeight * scale, groundLayers,QueryTriggerInteraction.Ignore);
         if (isNextStepHit)
         {
             Vector3 nextStep = TP(0, .9f * R + stepHeight, 0) + delta.normalized * Mathf.Max(.9f * R * scale, delta.magnitude) + nextStepHit.distance * TD(0, -1, 0) + TV(0, -.9f * R, 0);
@@ -93,14 +90,14 @@ public class CapsuleController : MonoBehaviour
     public bool CheckGrounded(out float groundDist, out RaycastHit groundHit)
     {
         bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
-            .9f * R * scale, TD(0, -1, 0), out groundHit, 2 * stepHeight * scale, groundLayers);
+            .9f * R * scale, TD(0, -1, 0), out groundHit, 2 * stepHeight * scale, groundLayers, QueryTriggerInteraction.Ignore);
         groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
         return isThisStep;
     }
     public Vector3 SweepCollider(Vector3 delta, bool slide, out bool isHit, out RaycastHit hit)
     {
         //Sweep
-        isHit = PhysicsEX.CapsuleCast(P1, P2, .9f * R * scale, delta.normalized, out hit, delta.magnitude + .1f * R * scale, environmentLayers);
+        isHit = PhysicsEX.CapsuleCast(P1, P2, .9f * R * scale, delta.normalized, out hit, delta.magnitude + .1f * R * scale, environmentLayers, QueryTriggerInteraction.Ignore);
         if (isHit)
         {
             Vector3 delta1 = delta.normalized * Mathf.Clamp(hit.distance - .2f * R * scale, 0, delta.magnitude);//Skinning is needed 
@@ -110,7 +107,7 @@ public class CapsuleController : MonoBehaviour
             else
             {
                 Vector3 delta2 = Vector3.ProjectOnPlane(delta - delta1, hit.normal);
-                bool isHit2 = PhysicsEX.CapsuleCast(P1 + delta1, P2 + delta1, .9f * R, delta2.normalized, out RaycastHit hit2, delta2.magnitude + .1f * R * scale, environmentLayers);
+                bool isHit2 = PhysicsEX.CapsuleCast(P1 + delta1, P2 + delta1, .9f * R, delta2.normalized, out RaycastHit hit2, delta2.magnitude + .1f * R * scale, environmentLayers, QueryTriggerInteraction.Ignore);
                 if (isHit2)
                 {
                     return delta1 + delta2.normalized * Mathf.Clamp(hit2.distance - .1f * R * scale, 0, delta2.magnitude);

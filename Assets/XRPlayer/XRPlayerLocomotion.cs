@@ -358,6 +358,7 @@ public class XRPlayerLocomotion : MonoBehaviour
 
         //height and rotation
         AdjustColliderAndHead();
+        DealInputRotation();
         DealTrackedRotation();
 
         //Head Movement
@@ -506,9 +507,9 @@ public class XRPlayerLocomotion : MonoBehaviour
         Vector3 targetPoint = hitInfo.point;
         RaycastHit hitInfo1;
         //if (Physics.SphereCast(targetPoint + TV(0, R, 0), .9f * R * scale, transform.up, out hitInfo1, (H - 1.8f * R) * scale, environmentLayers))
-        if (Physics.OverlapCapsuleNonAlloc(targetPoint + TV(0, R, 0), targetPoint + TV(0, H - 1.8f * R, 0), .9f * R * scale, colliderBuffer, environmentLayers) > 0)
+        if (Physics.OverlapCapsuleNonAlloc(targetPoint + TV(0, R, 0), targetPoint + TV(0, H - 1.8f * R, 0), .9f * R * scale, colliderBuffer, environmentLayers, QueryTriggerInteraction.Ignore) > 0)
             return false;
-        if (!Physics.SphereCast(targetPoint + TV(0, 1.4f * R, 0), .9f * R * scale, -transform.up, out hitInfo1, 1f * R * scale, environmentLayers))
+        if (!Physics.SphereCast(targetPoint + TV(0, 1.4f * R, 0), .9f * R * scale, -transform.up, out hitInfo1, 1f * R * scale, environmentLayers, QueryTriggerInteraction.Ignore))
             return false;
         if ((groundLayers & (1 << hitInfo1.collider.gameObject.layer)) == 0)
             return false;
@@ -695,7 +696,7 @@ public class XRPlayerLocomotion : MonoBehaviour
         trackedHeadHeight = Mathf.Clamp(trackedHeadHeight, minHeadHeight, maxHeadHeight);
         //H=h+R; dst=H-2R=h-R
         bool isHeadHit = PhysicsEX.SphereCast(transform.position + Vector3.ProjectOnPlane(head.position - transform.position, up) + TV(0, R, 0),
-            R * .9f, up, out RaycastHit headHit, Mathf.Max(0, trackedHeadHeight - R) * scale, environmentLayers);
+            R * .9f, up, out RaycastHit headHit, Mathf.Max(0, trackedHeadHeight - R) * scale, environmentLayers, QueryTriggerInteraction.Ignore);
         float allowedHeadHeight = isHeadHit ? headHit.distance / scale + R : trackedHeadHeight;
         if (allowedHeadHeight < minHeadHeight) allowedHeadHeight = minHeadHeight;
 
@@ -749,11 +750,6 @@ public class XRPlayerLocomotion : MonoBehaviour
         if (attached) attachedPositionLS = attached.InverseTransformPoint(attachedPointWS);
         updateAttach.Invoke(this.attached);
     }
-    void SetAttach(Transform attached, Vector3 attachedPositionLS, Vector3 attachAnchorPositionLS)
-    {
-        SetAttach(attached, attachedPositionLS);
-        this.attachAnchorPositionLS = attachAnchorPositionLS;
-    }
     #endregion
     #region CapsuleCollider
     CapsuleCollider capsuleCollider;
@@ -771,7 +767,7 @@ public class XRPlayerLocomotion : MonoBehaviour
     {
         float stepDist = Mathf.Max(delta.magnitude, R * scale);
         isNextStepHit = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0) + delta.normalized * Mathf.Max(.9f * R * scale, delta.magnitude),
-            .9f * R * scale, TD(0, -1, 0), out RaycastHit nextStepHit, 2 * stepHeight * scale, groundLayers);
+            .9f * R * scale, TD(0, -1, 0), out RaycastHit nextStepHit, 2 * stepHeight * scale, groundLayers, QueryTriggerInteraction.Ignore);
         if (isNextStepHit)
         {
             Vector3 nextStep = TP(0, .9f * R + stepHeight, 0) + delta.normalized * Mathf.Max(.9f * R * scale, delta.magnitude) + nextStepHit.distance * TD(0, -1, 0) + TV(0, -.9f * R, 0);
@@ -785,14 +781,14 @@ public class XRPlayerLocomotion : MonoBehaviour
     bool CheckGrounded(out float groundDist, out RaycastHit groundHit)
     {
         bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
-            .9f * R * scale, TD(0, -1, 0), out groundHit, 2 * stepHeight * scale, groundLayers);
+            .9f * R * scale, TD(0, -1, 0), out groundHit, 2 * stepHeight * scale, groundLayers, QueryTriggerInteraction.Ignore);
         groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
         return isThisStep;
     }
     Vector3 SweepCollider(Vector3 delta, bool slide, out bool isHit, out RaycastHit hit)
     {
         //Sweep
-        isHit = PhysicsEX.CapsuleCast(P1, P2, .9f * R * scale, delta.normalized, out hit, delta.magnitude + .1f * R * scale, environmentLayers);
+        isHit = PhysicsEX.CapsuleCast(P1, P2, .9f * R * scale, delta.normalized, out hit, delta.magnitude + .1f * R * scale, environmentLayers, QueryTriggerInteraction.Ignore);
         if (isHit)
         {
             Vector3 delta1 = delta.normalized * Mathf.Clamp(hit.distance - .2f * R * scale, 0, delta.magnitude);//Skinning is needed 
@@ -802,7 +798,7 @@ public class XRPlayerLocomotion : MonoBehaviour
             else
             {
                 Vector3 delta2 = Vector3.ProjectOnPlane(delta - delta1, hit.normal);
-                bool isHit2 = PhysicsEX.CapsuleCast(P1 + delta1, P2 + delta1, .9f * R, delta2.normalized, out RaycastHit hit2, delta2.magnitude + .1f * R * scale, environmentLayers);
+                bool isHit2 = PhysicsEX.CapsuleCast(P1 + delta1, P2 + delta1, .9f * R, delta2.normalized, out RaycastHit hit2, delta2.magnitude + .1f * R * scale, environmentLayers, QueryTriggerInteraction.Ignore);
                 if (isHit2)
                 {
                     return delta1 + delta2.normalized * Mathf.Clamp(hit2.distance - .1f * R * scale, 0, delta2.magnitude);
@@ -823,7 +819,7 @@ public class XRPlayerLocomotion : MonoBehaviour
         int overlapCount; bool tmp;
         if (resolveHead)
         {
-            overlapCount = Physics.OverlapSphereNonAlloc(headCollider.transform.position+ totalMoved, headCollider.radius * scale, colliderBuffer, environmentLayers);
+            overlapCount = Physics.OverlapSphereNonAlloc(headCollider.transform.position+ totalMoved, headCollider.radius * scale, colliderBuffer, environmentLayers, QueryTriggerInteraction.Ignore);
             tmp = headCollider.enabled;
             headCollider.enabled = true;
             for (int i = 0; i < overlapCount; ++i)
@@ -840,7 +836,7 @@ public class XRPlayerLocomotion : MonoBehaviour
         }
 
         //Body Collision Resolving
-        overlapCount = Physics.OverlapCapsuleNonAlloc(P1, P2, R * scale * 1.1f, colliderBuffer, environmentLayers);
+        overlapCount = Physics.OverlapCapsuleNonAlloc(P1, P2, R * scale * 1.1f, colliderBuffer, environmentLayers, QueryTriggerInteraction.Ignore);
         tmp = capsuleCollider.enabled;
         capsuleCollider.enabled = true;
         for (int i = 0; i < overlapCount; ++i)
