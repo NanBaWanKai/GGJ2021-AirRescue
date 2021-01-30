@@ -119,7 +119,7 @@ namespace IFancing.Net
         #region PRIVATE
         private void Awake()
         {
-            DontDestroyOnLoad(this);
+            //DontDestroyOnLoad(this);
         }
 
         private void OnEnable()

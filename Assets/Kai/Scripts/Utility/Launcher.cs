@@ -216,7 +216,7 @@ namespace IFancing.Net
 
         private void Awake()
         {
-            DontDestroyOnLoad(this);
+            //DontDestroyOnLoad(this);
             PhotonNetwork.AutomaticallySyncScene = true;
             m_playerPropertyCache.Add(PLAYER_READY, false);
             LocalPlayer.SetCustomProperties(m_playerPropertyCache);

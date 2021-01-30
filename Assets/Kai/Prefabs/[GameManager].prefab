@@ -75,6 +75,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5384bcf98899cd14588a3c92a6e228d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onLocalPlayerSpawn:
+    m_PersistentCalls:
+      m_Calls: []
   m_playerSpawn: {fileID: 6346171837203522062}
 --- !u!114 &337886377
 MonoBehaviour:

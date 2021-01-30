@@ -810,9 +810,9 @@ MonoBehaviour:
   animators:
   - animator: {fileID: 3743232831366587874}
     bools: []
-    floats:
+    floats: []
+    integers:
     - State
-    integers: []
   attachedPhotonViewID: 0
   attachedTransform: {fileID: 0}
 --- !u!54 &5622470730672598064
