@@ -43,16 +43,16 @@ public abstract class PanelBase : PunMonoBehaviour
                 SubscribeToggleValueChangeEvent(name, value);
             });
         }
-
-
-        m_keyboardPanel.SetActive(true);
-        m_keyboardPanel.GetComponent<KeyboardVR>().OnPressEnter += (str) =>
+        if (m_keyboardPanel)
         {
-            m_keyboardCachePanel?.SetActive(true);
-            m_keyboardPanel.GetComponent<DOTweenAnimation>().DOPlayBackwards();
-            m_selectInputField.text = str;
-        };
-
+            m_keyboardPanel.SetActive(true);
+            m_keyboardPanel.GetComponent<KeyboardVR>().OnPressEnter += (str) =>
+            {
+                m_keyboardCachePanel?.SetActive(true);
+                m_keyboardPanel.GetComponent<DOTweenAnimation>().DOPlayBackwards();
+                m_selectInputField.text = str;
+            };
+        }
     }
 
     protected virtual void SubscribeButtonClickEvent(string btnName) { }
