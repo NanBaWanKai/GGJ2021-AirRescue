@@ -12,7 +12,7 @@ public class AirFoil : MonoBehaviour
     public AirFoilSettings airFoilSettings;
     public float chordLength = 1;
     public float sectionLength = 1;
-    public int segmentation = 4;
+    public int segmentation = 1;
     public bool isFlap = false;
 
     [ReadOnly, SerializeField] public float wingArea;
@@ -46,6 +46,7 @@ public class AirFoil : MonoBehaviour
     }
     private void OnValidate()
     {
+        Debug.Assert(transform.localScale == Vector3.one);
         if (shapeReferenceCollider)
         {
             chordLength = shapeReferenceCollider.size.z * shapeReferenceCollider.transform.localScale.z;

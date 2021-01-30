@@ -729,14 +729,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605bdd40de208c544b8d68254db98398, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LeftAileron: {fileID: 1123198242431438524}
-  RightAileron: {fileID: 1123297755217357734}
-  HorizontalAileron: {fileID: 1123541939274074104}
-  VerticalAileron: {fileID: 1119423813243498398}
+  LeftAilerons:
+  - {fileID: 1123198242431438524}
+  RightAilerons:
+  - {fileID: 1123297755217357734}
+  HorizontalAilerons:
+  - {fileID: 1123541939274074104}
+  VerticalAilerons:
+  - {fileID: 1119423813243498398}
   foilsWithFlap:
   - {fileID: 1013578546170843400}
   - {fileID: 1014372160130386236}
-  thruster: {fileID: 1013443327620794182}
+  thrusters:
+  - {fileID: 1013443327620794182}
   wheels:
   - {fileID: 5205614735234951737}
   - {fileID: 6812143004969868539}

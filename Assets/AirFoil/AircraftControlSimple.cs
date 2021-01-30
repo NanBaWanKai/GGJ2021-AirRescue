@@ -6,9 +6,9 @@ using System;
 using UnityEngine.Events;
 public class AircraftControlSimple : MonoBehaviour
 {
-    public Transform LeftAileron, RightAileron, HorizontalAileron, VerticalAileron;
+    public Transform[] LeftAilerons, RightAilerons, HorizontalAilerons, VerticalAilerons;
     public AirFoil[] foilsWithFlap;
-    public Thruster thruster;
+    public Thruster[] thrusters;
 
     public WheelCollider[] wheels;
     public float[] wheelSteerings;
@@ -68,11 +68,16 @@ public class AircraftControlSimple : MonoBehaviour
         pitchInput = Mathf.Clamp(pitchInput, -1, 1);
         yawInput = Mathf.Clamp(yawInput, -1, 1);
 
-        thruster.throttle = throttleInput;
-        LeftAileron.localRotation = Quaternion.Euler(rollInput * rollSensitivity, 0, 0);
-        RightAileron.localRotation = Quaternion.Euler(-rollInput * rollSensitivity, 0, 0);
-        HorizontalAileron.localRotation = Quaternion.Euler(-pitchInput * pitchSensitivity, 0, 0);
-        VerticalAileron.localRotation = Quaternion.Euler(-yawInput * yawSensitivity, 0, 0);
+        foreach(var thruster in thrusters)
+            thruster.throttle = throttleInput;
+        foreach(var a in LeftAilerons)
+            a.localRotation = Quaternion.Euler(rollInput * rollSensitivity, 0, 0);
+        foreach (var a in RightAilerons)
+            a.localRotation = Quaternion.Euler(-rollInput * rollSensitivity, 0, 0);
+        foreach (var a in HorizontalAilerons)
+            a.localRotation = Quaternion.Euler(-pitchInput * pitchSensitivity, 0, 0);
+        foreach (var a in VerticalAilerons)
+            a.localRotation = Quaternion.Euler(-yawInput * yawSensitivity, 0, 0);
         for(int i = 0; i < foilsWithFlap.Length; ++i)
         {
             foilsWithFlap[i].isFlap = flapInput;
@@ -84,9 +89,11 @@ public class AircraftControlSimple : MonoBehaviour
             //Some known bugs of wheelcolliders, should not put zero
             wheels[i].motorTorque = wheelReverseInput?-reverseTorquePerWheel: 1e-7f;
         }
-
-        updateOutputs.updateEngineRPM.Invoke(thruster.rpm);
-        updateOutputs.updateEngineThrottle.Invoke(thruster.throttle);
+        float maxRPM = 0;
+        foreach (var thruster in thrusters)
+            maxRPM = Mathf.Max(maxRPM, thruster.rpm);
+        updateOutputs.updateEngineRPM.Invoke(maxRPM);
+        updateOutputs.updateEngineThrottle.Invoke(throttleInput);
     }
     private void Update()
     {
@@ -116,10 +123,18 @@ public class AircraftControlSimple : MonoBehaviour
         foreach (var f in airFoils)
             force += f.force;
         string aoa = "";
-        if (aoaWings.Length > 0) foreach (var af in aoaWings) aoa += string.Format("{0:F1}, ", af.angleOfAttack);
+        if (aoaWings.Length > 0) foreach (var af in aoaWings) aoa += string.Format("{0:F0}, ", af.angleOfAttack);
+        string rpm = "";
+        float totalThrust = 0;
+        foreach (var t in thrusters)
+        {
+            rpm += $"{t.rpm:F0}, ";
+            totalThrust += t.thrust;
+        }
+
         debug_text = string.Format(
-            $"Throttle: {thruster.throttle:P0} {thruster.thrust / body.mass / 9.81:F1}G\n" +
-            $"RPM: {thruster.rpm:F0}\n" +
+            $"Throttle: {throttleInput:P0} {totalThrust / body.mass / 9.81:F1}G\n" +
+            $"RPM: {rpm}\n" +
             $"AirSpeed: {Vector3.Dot(transform.forward, body.velocity) * 2.23693629f:F0} MPH ({Vector3.Dot(transform.forward, body.velocity):F1} m/s)\n" +
             $"Climb Rate:{body.velocity.y:F1}\n" +
             $"Altitude:{body.position.y:F1}\n" +

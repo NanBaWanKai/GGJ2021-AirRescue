@@ -94,8 +94,8 @@ public class AircraftIntegrator : MonoBehaviour
 
             worldForce += segWorldForce;
             worldTorque += Vector3.Cross(foilWorldDeltaPosition, segWorldForce);
-            if(calculate_pitch_momentum)
-                worldTorque += -foil.transform.right * torque;
+            if (calculate_pitch_momentum)
+                worldTorque += foilWorldRotation * Vector3.left * torque;
 
 
             foil.segAngleOfAttack[seg] = angleOfAttack;

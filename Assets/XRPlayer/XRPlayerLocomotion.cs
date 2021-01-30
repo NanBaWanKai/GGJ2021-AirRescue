@@ -215,9 +215,7 @@ public class XRPlayerLocomotion : MonoBehaviour
 
 
         //Check Falling
-        bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
-            .9f * R * scale, TD(0, -1, 0), out RaycastHit groundHit, 2 * stepHeight * scale, groundLayers);
-        float groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
+        bool isThisStep = CheckGrounded(out float groundDist, out RaycastHit groundHit);
         if (!isThisStep)
         {
             fallingVelocity = delta / dt;
@@ -233,7 +231,6 @@ public class XRPlayerLocomotion : MonoBehaviour
                 {
                     jumpReleased = false;
                     fallingVelocity = Vector3.ProjectOnPlane(inputDelta, up)/dt + up * jumpSpeed+ fallingVelocityReference;
-                    //fallingVelocityReference = attachedDelta / dt;
                     TransitionState(FallingState);
                 }
             }
@@ -251,7 +248,7 @@ public class XRPlayerLocomotion : MonoBehaviour
 
         //Move the Character and camera
         {
-            delta = SweepCollider(delta, slide: true);
+            delta = SweepCollider(delta, slide: true, out bool isColliderHit, out RaycastHit colliderHit);
             transform.position += delta;
             if (inputDelta.magnitude > 0)
             {
@@ -266,7 +263,7 @@ public class XRPlayerLocomotion : MonoBehaviour
                 //Debug.Log("B" + forward * trackedDelta.normalized / dt);
             }
             //if (inputDelta.magnitude > 0) 
-            ResolveCollision();
+            transform.position += GetCollisionResolveVector();
         }
 
         //Update Attach
@@ -310,20 +307,22 @@ public class XRPlayerLocomotion : MonoBehaviour
         Vector3 delta = fallingVelocity * dt;
 
         //Check Grounded
-        bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
-            .9f * R * scale, TD(0, -1, 0), out RaycastHit groundHit, 2 * stepHeight * scale, groundLayers);
-        float groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
+        bool isThisStep = CheckGrounded(out float groundDist, out RaycastHit groundHit);
+
         if (isThisStep && groundDist + Vector3.Dot(fallingVelocity * dt, up) <= .1f * R * scale)
             TransitionState(GroundedState);
 
 
         //Move the Character and camera
         {
-            delta = SweepCollider(delta, slide: true);
+            Vector3 delta0 = delta;
+            delta = SweepCollider(delta, slide: true, out bool isColliderHit, out RaycastHit colliderHit);
+            if (isColliderHit)
+                fallingVelocityReference = Vector3.zero;
             transform.position += delta;
             trackingSpace.position -= trackedDelta;
             //if (inputDelta.magnitude > 0) 
-            ResolveCollision();
+            transform.position += GetCollisionResolveVector();
         }
     }
     void EnterGrounded()
@@ -380,11 +379,11 @@ public class XRPlayerLocomotion : MonoBehaviour
 
         //Move the Character and camera
         {
-            delta = SweepCollider(delta, slide: true);
+            delta = SweepCollider(delta, slide: true, out bool isColliderHit, out RaycastHit colliderHit);
             transform.position += delta;
             trackingSpace.position -= trackedDelta;
             //if (inputDelta.magnitude > 0) 
-            ResolveCollision();
+            transform.position+=GetCollisionResolveVector();
         }
     }
     #endregion
@@ -464,10 +463,11 @@ public class XRPlayerLocomotion : MonoBehaviour
 
         //Move the Character and camera
         {
-            delta = SweepCollider(delta, slide: true);
+            delta = SweepCollider(delta, slide: true, out bool isColliderHit, out RaycastHit colliderHit);
             transform.position += delta;
             trackingSpace.position -= stepDelta.magnitude > 0 ? trackedDelta : Vector3.ProjectOnPlane(delta, up);
-            var enforcedDelta = ResolveCollision();
+            var enforcedDelta = GetCollisionResolveVector();
+            transform.position += enforcedDelta;
             if (enforcedDelta.magnitude / scale > .005f)
                 _OnEnforcedMovement();
         }
@@ -496,8 +496,7 @@ public class XRPlayerLocomotion : MonoBehaviour
 
 
         //Update Attach
-        bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
-            .9f * R * scale, TD(0, -1, 0), out RaycastHit groundHit, 2 * stepHeight * scale, groundLayers);
+        bool isThisStep = CheckGrounded(out float groundDist, out RaycastHit groundHit);
         if (isThisStep)
             SetAttach(groundHit.transform, Vector3.zero);
 
@@ -783,10 +782,17 @@ public class XRPlayerLocomotion : MonoBehaviour
         }
         return delta;
     }
-    Vector3 SweepCollider(Vector3 delta, bool slide)
+    bool CheckGrounded(out float groundDist, out RaycastHit groundHit)
+    {
+        bool isThisStep = PhysicsEX.SphereCast(TP(0, .9f * R + stepHeight, 0),
+            .9f * R * scale, TD(0, -1, 0), out groundHit, 2 * stepHeight * scale, groundLayers);
+        groundDist = isThisStep ? groundHit.distance - stepHeight * scale : float.PositiveInfinity;
+        return isThisStep;
+    }
+    Vector3 SweepCollider(Vector3 delta, bool slide, out bool isHit, out RaycastHit hit)
     {
         //Sweep
-        bool isHit = PhysicsEX.CapsuleCast(P1, P2, .9f * R * scale, delta.normalized, out RaycastHit hit, delta.magnitude + .1f * R * scale, environmentLayers);
+        isHit = PhysicsEX.CapsuleCast(P1, P2, .9f * R * scale, delta.normalized, out hit, delta.magnitude + .1f * R * scale, environmentLayers);
         if (isHit)
         {
             Vector3 delta1 = delta.normalized * Mathf.Clamp(hit.distance - .2f * R * scale, 0, delta.magnitude);//Skinning is needed 
@@ -810,24 +816,23 @@ public class XRPlayerLocomotion : MonoBehaviour
         else
             return delta;
     }
-    Vector3 ResolveCollision(bool resolveHead = true)
+    Vector3 GetCollisionResolveVector(bool resolveHead = true)
     {
         Vector3 totalMoved = Vector3.zero;
         //Head Collision Resolving(?)
         int overlapCount; bool tmp;
         if (resolveHead)
         {
-            overlapCount = Physics.OverlapSphereNonAlloc(headCollider.transform.position, headCollider.radius * scale, colliderBuffer, environmentLayers);
+            overlapCount = Physics.OverlapSphereNonAlloc(headCollider.transform.position+ totalMoved, headCollider.radius * scale, colliderBuffer, environmentLayers);
             tmp = headCollider.enabled;
             headCollider.enabled = true;
             for (int i = 0; i < overlapCount; ++i)
             {
                 var c = colliderBuffer[i];
                 if (c == capsuleCollider || c == headCollider) continue;
-                if (Physics.ComputePenetration(headCollider, headCollider.transform.position, headCollider.transform.rotation, c, c.transform.position, c.transform.rotation,
+                if (Physics.ComputePenetration(headCollider, headCollider.transform.position + totalMoved, headCollider.transform.rotation, c, c.transform.position, c.transform.rotation,
                     out Vector3 resolveDir, out float resolveDist))
                 {
-                    transform.position += resolveDir * resolveDist;
                     totalMoved += resolveDir * resolveDist;
                 }
             }
@@ -842,10 +847,9 @@ public class XRPlayerLocomotion : MonoBehaviour
         {
             var c = colliderBuffer[i];
             if (c == capsuleCollider || c == headCollider) continue;
-            if (Physics.ComputePenetration(capsuleCollider, capsuleCollider.transform.position, capsuleCollider.transform.rotation, c, c.transform.position, c.transform.rotation,
+            if (Physics.ComputePenetration(capsuleCollider, capsuleCollider.transform.position + totalMoved, capsuleCollider.transform.rotation, c, c.transform.position, c.transform.rotation,
                 out Vector3 resolveDir, out float resolveDist))
             {
-                transform.position += resolveDir * resolveDist;
                 totalMoved += resolveDir * resolveDist;
             }
         }
