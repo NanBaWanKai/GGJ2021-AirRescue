@@ -19,14 +19,20 @@ public class XRMountPoint : MonoBehaviour
         if (!acceptedMountTags.Contains(g.mountTag)) return false;
         return true;
     }
-    public void Mount(XRGrabable g)
+    void TryMount(XRGrabable g)
+    {
+        g.TryMount(this);
+    }
+    void UnmountIfMounted()
     {
         if (mounted) mounted.UnmountIfMounted();
-        g.DetachIfAttached();
-        g.UnmountIfMounted();
+    }
+    public void _Mount(XRGrabable g)
+    {
+        if (mounted && mounted!=g) mounted.UnmountIfMounted();
         mounted = g;
     }
-    public void UnMount(XRGrabable g)
+    public void _UnMount(XRGrabable g)
     {
         if (mounted == g) mounted = null;
     }

@@ -3287,7 +3287,6 @@ GameObject:
   - component: {fileID: 1438055436}
   - component: {fileID: 1438055435}
   - component: {fileID: 1438055440}
-  - component: {fileID: 1438055439}
   m_Layer: 5
   m_Name: WaitRoomCanvas
   m_TagString: Untagged
@@ -3384,29 +3383,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 1.44}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1438055439
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1438055434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  observableSearch: 2
-  Synchronization: 3
-  OwnershipTransfer: 1
-  ObservedComponents:
-  - {fileID: 1438055440}
-  viewIdField: 2
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!114 &1438055440
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3591,6 +3567,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1761484869}
   - component: {fileID: 1761484868}
+  - component: {fileID: 1761484870}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3610,6 +3587,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5384bcf98899cd14588a3c92a6e228d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onLocalPlayerSpawn:
+    m_PersistentCalls:
+      m_Calls: []
   m_playerSpawn: {fileID: 112205640}
 --- !u!4 &1761484869
 Transform:
@@ -3624,8 +3604,31 @@ Transform:
   m_Children:
   - {fileID: 112205640}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1761484870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1761484867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  observableSearch: 2
+  Synchronization: 3
+  OwnershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 1761484868}
+  viewIdField: 2
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1816362685
 GameObject:
   m_ObjectHideFlags: 0

@@ -254,7 +254,10 @@ public class XRGrabable : XRInteractable
         }
 
         if (mountOnDrop && !mounted && !hand)
+        {
+            print(name+" "+mountOnDrop + "," + mounted + "," + hand);
             TryMount(mountOnDrop);
+        }
 
         {
             smoothedVelocity = Vector3.Lerp(smoothedVelocity, body.velocity, Time.fixedDeltaTime / throwSmoothTime);
@@ -400,9 +403,10 @@ public class XRGrabable : XRInteractable
         transform.rotation = desiredRotation;
         body.isKinematic = true;
         mounted = newMountPoint;
-        newMountPoint.Mount(this);
+        newMountPoint._Mount(this);
         updateEvents.onMount.Invoke();
         updateEvents.updateAttach.Invoke(newMountPoint.transform);
+        Debug.Log(mounted);
     }
     void UpdateMounted(float dt)
     {
@@ -418,7 +422,7 @@ public class XRGrabable : XRInteractable
     void _UnMount()
     {
         body.isKinematic = false;
-        mounted.UnMount(this);
+        mounted._UnMount(this);
         mounted = null;
         updateEvents.onUnMount.Invoke();
         updateEvents.updateAttach.Invoke(null);
