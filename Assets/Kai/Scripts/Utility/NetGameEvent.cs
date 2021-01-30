@@ -1,4 +1,6 @@
-﻿using Photon.Pun;
+﻿using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Realtime;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -6,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-//using Photon.Realtime;
 
 namespace IFancing.Net
 {
@@ -52,7 +53,7 @@ namespace IFancing.Net
         void BroadcastLocal<T, U, O, P>(string eventName, T arg1, U arg2, O arg3, P arg4);
         void BroadcastLocal<T, U, O, P, Q>(string eventName, T arg1, U arg2, O arg3, P arg4, Q arg5);
     }
-    public sealed class NetGameEvent : MonoBehaviour, INetGameEvent
+    public sealed class NetGameEvent : MonoBehaviour, INetGameEvent, IOnEventCallback
     {
         /// <summary>
         /// 事件名称
@@ -119,6 +120,15 @@ namespace IFancing.Net
         private void Awake()
         {
             DontDestroyOnLoad(this);
+        }
+
+        private void OnEnable()
+        {
+            PhotonNetwork.AddCallbackTarget(this);
+        }
+        private void OnDisable()
+        {
+            PhotonNetwork.RemoveCallbackTarget(this);
         }
         private void Update()
         {
@@ -391,6 +401,7 @@ namespace IFancing.Net
             if (IsInRoom())
             {
                 PV.RPC("SendBroadcast", RpcTarget.All, command);
+                //PhotonNetwork.RaiseEvent
             }
             else
             {
@@ -653,6 +664,11 @@ namespace IFancing.Net
             }
             t = Type.GetType(name + ",UnityEngine");
             return t;
+        }
+
+        public void OnEvent(EventData photonEvent)
+        {
+
         }
 
 
