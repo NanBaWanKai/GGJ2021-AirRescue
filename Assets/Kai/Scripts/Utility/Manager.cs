@@ -6,7 +6,17 @@ public sealed class Manager : MonoBehaviour
 {
 
     private static Manager s_intance;
-    public static Manager Instance => s_intance;
+    public static Manager Instance
+    {
+        get
+        {
+            if (s_intance == null)
+            {
+                s_intance = FindObjectOfType<Manager>();
+            }
+            return s_intance;
+        }
+    }
 
     [SerializeField]
     string m_defaultSceneName;
