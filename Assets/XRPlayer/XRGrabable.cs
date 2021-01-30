@@ -17,11 +17,11 @@ public class XRGrabable : XRInteractable
     public Transform attachRef, attach2Ref;
     public Transform mountRef;
     public string mountTag="Disabled";
-    public XRMountPoint mountWhenDetached;
     public XRJointSettings jointSettings;
     public float lostTrackDist = .3f;
     public float throwSmoothTime = .1f;
     public bool breakWhenLostTrack = true;
+    public XRMountPoint mountOnDrop;
 
     [System.Serializable] public class UpdateTransform : UnityEvent<Transform> { }
     [System.Serializable]public struct UpdateEvents
@@ -40,6 +40,7 @@ public class XRGrabable : XRInteractable
     Vector3 attachedPositionLS, attached2PositionLS, desiredPosition;
     Quaternion attachedRotationLS, attached2RotationLS, desiredRotation;
     Vector3 smoothedVelocity, smoothedAngularVelocity;
+
 
     private void Awake()
     {
@@ -185,9 +186,10 @@ public class XRGrabable : XRInteractable
         body.angularVelocity = smoothedAngularVelocity;
         updateEvents.onDrop.Invoke();
         updateEvents.updateAttach.Invoke(null);
-        if (mountWhenDetached)
-            TryMount(mountWhenDetached);
-        else
+        if (mountOnDrop)
+        {
+            TryMount(mountOnDrop);
+        }
         {
             var mp = GetMountHovering();
             if (mp)
@@ -251,8 +253,8 @@ public class XRGrabable : XRInteractable
             UpdateMounted(Time.fixedDeltaTime);
         }
 
-        if (mountWhenDetached && !mounted && !hand)
-            TryMount(mountWhenDetached);
+        if (mountOnDrop && !mounted && !hand)
+            TryMount(mountOnDrop);
 
         {
             smoothedVelocity = Vector3.Lerp(smoothedVelocity, body.velocity, Time.fixedDeltaTime / throwSmoothTime);
@@ -280,6 +282,10 @@ public class XRGrabable : XRInteractable
             float strength = Mathf.Lerp(0, hand.hapticSettings.collisionEnterMaxStrength, speed / hand.hapticSettings.collisionEnterMaxStrengthSpeed);
             hand.SendHapticImpulse(strength, hand.hapticSettings.collisionEnterDuration);
         }
+    }
+    private void OnValidate()
+    {
+        if (outline) outline.enabled = false;
     }
 
     void ResetMovement()

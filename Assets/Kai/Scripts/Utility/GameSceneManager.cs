@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 public class GameSceneManager : PunMonoBehaviour
 {
 
@@ -14,6 +15,9 @@ public class GameSceneManager : PunMonoBehaviour
 
     private static GameSceneManager s_intance;
     public static GameSceneManager Instance => s_intance;
+
+    [System.Serializable] public class GameobjectEvent : UnityEvent<GameObject> { }
+    public GameobjectEvent onLocalPlayerSpawn;
 
     public int Score
     {
@@ -52,6 +56,7 @@ public class GameSceneManager : PunMonoBehaviour
         var random = UnityEngine.Random.Range(-5f, 5f);
         var go=PhotonNetwork.Instantiate(PLAYER_PATH, m_playerSpawn.position + m_playerSpawn.transform.right * random, m_playerSpawn.rotation);
         go.name += "(local)";
+        onLocalPlayerSpawn.Invoke(go);
     }
     public override void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {

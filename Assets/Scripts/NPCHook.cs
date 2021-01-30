@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class NPCHook : MonoBehaviour
+using Photon.Pun;
+public class NPCHook : MonoBehaviourPun
 {
-    public LineRenderer line;
     private void OnTriggerEnter(Collider other)
     {
-        var npc = other.GetComponentInParent<NPC>();
-        if(npc && other == npc.hookPoint)
+        if (photonView.IsMine)
         {
+            var npc = other.GetComponentInParent<NPC>();
+            if (npc && other == npc.hookPoint)
+            {
+                npc.Hook(XRPlayerLocomotion.instance.transform);
+            }
         }
     }
 }

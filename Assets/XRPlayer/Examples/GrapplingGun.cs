@@ -36,7 +36,7 @@ public class GrapplingGun : MonoBehaviour
     bool triggerReleased = false;
     private void OnEnable()
     {
-        hook.parent = null;
+        //hook.parent = null;
     }
     private void FixedUpdate()
     {
